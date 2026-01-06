@@ -4,7 +4,7 @@
  */
 import axios from 'axios';
 
-const API_URL = "https://saigo.onrender.com/api" || 'http://localhost:8000/api';
+const API_URL = "https://saigopython.onrender.com/api" || 'http://localhost:8000/api';
 
 // Create axios instance
 const api = axios.create({
