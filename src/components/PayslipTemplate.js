@@ -21,12 +21,8 @@ const PayslipTemplate = ({ payslip, company }) => {
             p: 4, 
             bgcolor: 'white', 
             color: 'black',
-<<<<<<< HEAD
-            width: '210mm',
-=======
             width: '100%',
             maxWidth: '210mm',
->>>>>>> 6030f02 (issues resolved)
             minHeight: '297mm', 
             mx: 'auto',
             boxSizing: 'border-box',
@@ -46,11 +42,6 @@ const PayslipTemplate = ({ payslip, company }) => {
                 {company?.email && <><br />Email: {company.email}</>}
             </Typography>
         </Box>
-<<<<<<< HEAD
-        <Box sx={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            {company?.logo_url ? (
-                <img src={company.logo_url} alt="Logo" style={{ maxHeight: 60, maxWidth: 150, objectFit: 'contain' }} />
-=======
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-start' }}>
             {company?.logo_url ? (
                 <Box 
@@ -64,18 +55,13 @@ const PayslipTemplate = ({ payslip, company }) => {
                         mb: 1
                     }} 
                 />
->>>>>>> 6030f02 (issues resolved)
             ) : (
                 <Typography variant="h4" color="primary.main" sx={{ fontWeight: 900, opacity: 0.8 }}>
                     {company?.name?.substring(0, 4)?.toUpperCase() || 'LOGO'}
                 </Typography>
             )}
             {company?.website && (
-<<<<<<< HEAD
-                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-=======
                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
->>>>>>> 6030f02 (issues resolved)
                      {company.website}
                  </Typography>
             )}
