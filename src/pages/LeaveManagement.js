@@ -3,44 +3,44 @@
  * Handles leave applications, balance tracking, and approvals
  */
 import {
-  Add as AddIcon,
-  Cancel as CancelIcon,
-  CheckCircle as CheckCircleIcon,
-  ChevronLeft,
-  ChevronRight,
-  Event as EventIcon,
-  History as HistoryIcon,
-  Info as InfoIcon,
-  Laptop as LaptopIcon
+    Add as AddIcon,
+    Cancel as CancelIcon,
+    CheckCircle as CheckCircleIcon,
+    ChevronLeft,
+    ChevronRight,
+    Event as EventIcon,
+    History as HistoryIcon,
+    Info as InfoIcon,
+    Laptop as LaptopIcon
 } from '@mui/icons-material';
 import {
-  Autocomplete,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  IconButton,
-  MenuItem,
-  Paper,
-  Snackbar,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Tabs,
-  TextField,
-  Typography,
-  useTheme
+    Autocomplete,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Grid,
+    IconButton,
+    MenuItem,
+    Paper,
+    Snackbar,
+    Tab,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    Tabs,
+    TextField,
+    Typography,
+    useTheme
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import { useEffect, useState } from 'react';
@@ -528,6 +528,8 @@ const LeaveManagement = () => {
                 <MenuItem value="casual">Casual Leave</MenuItem>
                 <MenuItem value="sick">Sick Leave</MenuItem>
                 <MenuItem value="annual">Annual Leave</MenuItem>
+                <MenuItem value="maternity">Maternity Leave</MenuItem>
+                <MenuItem value="paternity">Paternity Leave</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} md={6}>

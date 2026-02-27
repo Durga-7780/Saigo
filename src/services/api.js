@@ -4,7 +4,12 @@
  */
 import axios from 'axios';
 
+/*<<<<<<< HEAD
 const API_URL = "https://saigopython.onrender.com/api" || 'http://localhost:8000/api';
+=======
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+>>>>>>> 87ad27b (added leavemanagement)
+*/
 
 // Create axios instance
 const api = axios.create({
@@ -141,7 +146,22 @@ export const mealAPI = {
 
 export const companyAPI = {
     getSettings: () => api.get('/company/'),
-    updateSettings: (data) => api.put('/company/', data),
+    updateSettings: (data) => api.put('/company/', data, {
+        headers: {
+            'Content-Type': data instanceof FormData ? undefined : 'application/json'
+        }
+    }),
+};
+
+export const documentsAPI = {
+    generate: (data) => api.post('/documents/generate', data, {
+        headers: {
+            'Content-Type': undefined, // Let browser handle boundary
+        }
+    }),
+    create: (data) => api.post('/documents/', data),
+    getMy: () => api.get('/documents/my'),
+    getAll: () => api.get('/documents/all'), // For HR
 };
 
 export default api;

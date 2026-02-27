@@ -29,6 +29,7 @@ import {
     BarElement,
     CategoryScale,
     Chart as ChartJS,
+    Filler,
     Legend,
     LinearScale,
     LineElement,
@@ -36,7 +37,8 @@ import {
     Title,
     Tooltip
 } from 'chart.js';
-import { useEffect, useState } from 'react';
+import html2pdf from 'html2pdf.js';
+import { useEffect, useRef, useState } from 'react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { chatbotAPI, dashboardAPI } from '../services/api';
 
@@ -50,8 +52,10 @@ ChartJS.register(
     ArcElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Filler // Import Filler for area charts
 );
+
 
 const Reports = () => {
     const theme = useTheme();
@@ -61,6 +65,12 @@ const Reports = () => {
     const [aiResponse, setAiResponse] = useState(null);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [pdfLoading, setPdfLoading] = useState(false); // New state for PDF generation
+
+    // Refs for Charts
+    const trendChartRef = useRef(null);
+    const deptChartRef = useRef(null);
+    const leaveChartRef = useRef(null);
 
     useEffect(() => {
         fetchStats();
@@ -84,7 +94,10 @@ const Reports = () => {
         try {
             const response = await chatbotAPI.ask({ 
                 query: query,
-                context: { type: 'admin_reports' }
+                context: { 
+                    type: 'admin_reports',
+                    all_stats: stats // Pass stats to AI
+                }
             });
             setAiResponse(response.data.answer);
         } catch (error) {
@@ -92,6 +105,81 @@ const Reports = () => {
             setAiResponse("Sorry, I couldn't generate that report right now. Please try again.");
         } finally {
             setAiLoading(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        setPdfLoading(true);
+        try {
+            // 1. Get AI Summary
+            let summary = "Summary not available.";
+            try {
+                const aiRes = await chatbotAPI.ask({
+                    query: "Generate a comprehensive executive summary of this dashboard data for a PDF report. Focus on attendance trends, department distribution, and leave status. Keep it professional and concise (approx 100 words).",
+                    context: { 
+                        type: 'admin_reports',
+                        all_stats: stats 
+                    }
+                });
+                summary = aiRes.data.answer;
+            } catch (e) {
+                console.error("AI Summary generation failed", e);
+                summary = "Automated summary generation failed. Please refer to charts below.";
+            }
+
+            // 2. Capture Charts
+            const trendImg = trendChartRef.current.toBase64Image();
+            const deptImg = deptChartRef.current.toBase64Image();
+            const leaveImg = leaveChartRef.current.toBase64Image();
+
+            // 3. Build HTML Content
+            const element = document.createElement('div');
+            element.innerHTML = `
+                <div style="padding: 20px; font-family: Arial, sans-serif; color: #333;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">
+                        <h1 style="color: #1976d2; margin: 0;">Workforce Analytics Report</h1>
+                        <span style="color: #666;">Generated: ${new Date().toLocaleDateString()}</span>
+                    </div>
+
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; color: #444;">Executive Summary</h3>
+                        <p style="line-height: 1.6; color: #555;">${summary}</p>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">Attendance Trends (7 Days)</h3>
+                        <img src="${trendImg}" style="width: 100%; max-height: 300px; object-fit: contain; margin-top: 10px;" />
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+                        <div style="flex: 1;">
+                            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">Department Distribution</h3>
+                            <img src="${deptImg}" style="width: 100%; max-height: 200px; object-fit: contain; margin-top: 10px;" />
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">Leave Status</h3>
+                            <img src="${leaveImg}" style="width: 100%; max-height: 200px; object-fit: contain; margin-top: 10px;" />
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 4. Generate PDF
+            const opt = {
+                margin: 0.5,
+                filename: `Analytics_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            await html2pdf().from(element).set(opt).save();
+
+        } catch (error) {
+            console.error("PDF Generation failed:", error);
+            alert("Failed to generate PDF report.");
+        } finally {
+            setPdfLoading(false);
         }
     };
 
@@ -164,8 +252,17 @@ const Reports = () => {
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button variant="outlined" startIcon={<Refresh />} onClick={fetchStats}>Sync</Button>
-                    <Button variant="contained" startIcon={<Download />}>Report PDF</Button>
+                    <Button 
+                        variant="contained" 
+                        startIcon={pdfLoading ? <CircularProgress size={20} color="inherit" /> : <Download />}
+                        onClick={handleDownloadPDF}
+                        disabled={pdfLoading}
+                    >
+                        {pdfLoading ? 'Generating...' : 'Report PDF'}
+                    </Button>
                 </Box>
             </Box>
 
@@ -233,11 +330,11 @@ const Reports = () => {
                                 <Typography variant="h6" sx={{ fontWeight: 700 }}>Attendance Tendencies (7 Days)</Typography>
                                 <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} size="small">
                                     <Tab label="Trends" />
-                                    <Tab label="Heatmap" disabled />
                                 </Tabs>
                             </Box>
                             <Box sx={{ height: 350 }}>
                                 <Line 
+                                    ref={trendChartRef}
                                     data={trendData} 
                                     options={{
                                         responsive: true,
@@ -260,6 +357,7 @@ const Reports = () => {
                                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>By Department</Typography>
                                     <Box sx={{ height: 200, display: 'flex', justifyContent: 'center' }}>
                                         <Doughnut 
+                                            ref={deptChartRef}
                                             data={deptData}
                                             options={{
                                                 responsive: true,
@@ -279,6 +377,7 @@ const Reports = () => {
                                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Leave Flow Status</Typography>
                                     <Box sx={{ height: 180 }}>
                                         <Bar 
+                                            ref={leaveChartRef}
                                             data={leaveData}
                                             options={{
                                                 indexAxis: 'y',
