@@ -4,12 +4,7 @@
  */
 import axios from 'axios';
 
-/*<<<<<<< HEAD
-const API_URL = "https://saigopython.onrender.com/api" || 'http://localhost:8000/api';
-=======
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
->>>>>>> 87ad27b (added leavemanagement)
-*/
 
 // Create axios instance
 const api = axios.create({
@@ -87,6 +82,35 @@ export const employeeAPI = {
 export const chatbotAPI = {
   ask: (data) => api.post('/chatbot/ask', data),
   getSuggestions: () => api.get('/chatbot/suggestions'),
+  getVoiceConfig: () => api.get('/chatbot/voice/config'),
+  createVoiceSession: () => api.post('/chatbot/voice/sessions'),
+  listVoiceSessions: () => api.get('/chatbot/voice/sessions'),
+  getVoiceSession: (sessionId) => api.get(`/chatbot/voice/sessions/${sessionId}`),
+  sendVoiceTurn: (sessionId, audioBlob, options = {}) => {
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    if (options.inputLanguage) {
+      formData.append('input_language', options.inputLanguage);
+    }
+    if (options.responseLanguage) {
+      formData.append('response_language', options.responseLanguage);
+    }
+    formData.append('audio', audioBlob, 'voice.webm');
+    return api.post('/chatbot/voice/turn', formData, {
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
+  },
+  getVoiceIdleGreeting: (sessionId) => {
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    return api.post('/chatbot/voice/idle-greeting', formData, {
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
+  },
 };
 
 // Dashboard
